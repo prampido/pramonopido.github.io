@@ -1826,48 +1826,6 @@
 
     </div>
 
-    <!-- Panel kontrol peta -->
-
-    <aside class="map-panel">
-
-        <div class="panel-header">
-            <h2>Kontrol Peta</h2>
-            <p>Pilih data dan tampilan peta</p>
-        </div>
-
-        <div class="panel-section">
-
-            <label
-                    class="control-label"
-                    for="basemapSelect"
-            >
-                Peta dasar
-            </label>
-
-            <select
-                    class="form-select"
-                    id="basemapSelect"
-            >
-                <option
-                        value="esriSatellite"
-                        selected
-                >
-                    Esri World Imagery
-                </option>
-
-                <option value="esriStreet">
-                    Esri World Street Map
-                </option>
-
-                <option value="osm">
-                    OpenStreetMap
-                </option>
-            </select>
-
-        </div>
-
-    </aside>
-
 </section>
 
 <!-- =========================================================
@@ -2379,58 +2337,13 @@
        BASEMAP
     ========================================================= */
 
-    const basemaps = {
-
-        osm: L.tileLayer(
-            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-            {
-                maxZoom: 19,
-
-                attribution:
-                    "&copy; OpenStreetMap contributors"
-            }
-        ),
-
-        esriStreet: L.tileLayer(
-            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
-            {
-                maxZoom: 19,
-                attribution: "Tiles &copy; Esri"
-            }
-        ),
-
-        esriSatellite: L.tileLayer(
-            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-            {
-                maxZoom: 19,
-                attribution: "Tiles &copy; Esri"
-            }
-        )
-
-    };
-
-    let activeBasemap =
-        basemaps.esriSatellite;
-
-    activeBasemap.addTo(map);
-
-    const basemapSelect =
-        document.getElementById("basemapSelect");
-
-    basemapSelect.addEventListener(
-        "change",
-        function () {
-
-            map.removeLayer(activeBasemap);
-
-            activeBasemap =
-                basemaps[basemapSelect.value];
-
-            activeBasemap.addTo(map);
-            activeBasemap.bringToBack();
-
+    L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        {
+            maxZoom: 19,
+            attribution: "Tiles &copy; Esri"
         }
-    );
+    ).addTo(map);
 
     /* =========================================================
        DATA DEMONSTRASI
