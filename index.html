@@ -1,18 +1,2834 @@
-Pramono Putra S. Pido
-Mahasiswa Pascasarjana Geografi Universitas Indonesia
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
 
-Tentang Penelitian Blog Kontak
-Tentang
-Fokus penelitian pada GIS, Penginderaan Jauh, analisis lingkungan, dan DAS Limboto.
+    <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+    >
 
-Penelitian
-Danau Limboto
-Pemetaan Tutupan Lahan
-Google Earth Engine
-Penginderaan Jauh
-Artikel
-Mengapa Saya Memilih Geografi
-Belajar GIS dari Nol
-Analisis DAS Limboto
-Kontak
-Email: pramono.putra@ui.ac.id
+    <meta
+            name="description"
+            content="Portal geospasial dan blog akademik Pramono Pido, Geografi Universitas Indonesia."
+    >
+
+    <title>Pramono Pido | Blog Akademik Geografi</title>
+
+    <!-- Leaflet -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <script
+            src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+
+    <!-- Chart.js -->
+    <script
+            src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js">
+    </script>
+
+    <style>
+        :root {
+            --ui-yellow: #ffdc00;
+            --ui-blue: #17367d;
+            --ui-dark: #201512;
+
+            --primary: #075985;
+            --primary-dark: #082f49;
+            --primary-light: #0ea5e9;
+            --secondary: #22c55e;
+
+            --background: #f1f5f9;
+            --surface: #ffffff;
+            --text: #0f172a;
+            --text-secondary: #475569;
+            --border: #cbd5e1;
+
+            --shadow:
+                    0 14px 40px rgba(15, 23, 42, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family:
+                    Arial,
+                    Helvetica,
+                    sans-serif;
+
+            color: var(--text);
+            background: var(--background);
+            line-height: 1.7;
+        }
+
+        button,
+        select,
+        input {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        img {
+            max-width: 100%;
+        }
+
+        /* =====================================================
+           NAVIGASI
+        ===================================================== */
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 3000;
+
+            min-height: 76px;
+            padding: 8px 25px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+
+            color: white;
+            background: rgba(8, 47, 73, 0.97);
+
+            border-bottom: 3px solid var(--ui-yellow);
+
+            box-shadow:
+                    0 5px 20px rgba(0, 0, 0, 0.22);
+
+            backdrop-filter: blur(10px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand-logo {
+            width: 42px;
+            height: 56px;
+            flex: 0 0 42px;
+
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+
+            overflow: hidden;
+
+            background: var(--ui-yellow);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+        }
+
+        .brand-logo img {
+            width: 100%;
+            height: 100%;
+
+            display: block;
+
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .logo-missing::after {
+            content: "UI";
+            color: var(--ui-blue);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: -0.08em;
+        }
+
+        .hero-logo.logo-missing::after,
+        .affiliation-image.logo-missing::after {
+            font-size: 42px;
+        }
+
+        .brand-text strong {
+            display: block;
+
+            font-size: 17px;
+            line-height: 1.2;
+        }
+
+        .brand-text span {
+            display: block;
+            margin-top: 4px;
+
+            color: #bae6fd;
+            font-size: 12px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-links a {
+            padding: 9px 13px;
+
+            color: white;
+            text-decoration: none;
+
+            border-radius: 8px;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            transition:
+                    color 0.2s,
+                    background 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--ui-dark);
+            background: var(--ui-yellow);
+        }
+
+        .menu-button {
+            display: none;
+
+            width: 44px;
+            height: 44px;
+
+            color: white;
+            background: transparent;
+
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            border-radius: 8px;
+
+            font-size: 23px;
+        }
+
+        /* =====================================================
+           HERO DAN PETA
+        ===================================================== */
+
+        .hero-map {
+            position: relative;
+
+            height: min(850px, 100vh);
+            min-height: 720px;
+
+            margin-top: 76px;
+
+            overflow: hidden;
+        }
+
+        #map {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .map-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+
+            pointer-events: none;
+
+            background:
+                    linear-gradient(
+                            90deg,
+                            rgba(3, 30, 47, 0.87) 0%,
+                            rgba(3, 30, 47, 0.58) 35%,
+                            rgba(3, 30, 47, 0.10) 70%,
+                            transparent 100%
+                    );
+        }
+
+        .hero-introduction {
+            position: absolute;
+            top: 55px;
+            left: 38px;
+            z-index: 600;
+
+            width: min(530px, calc(100% - 76px));
+            padding: 30px;
+
+            color: white;
+            background: rgba(8, 47, 73, 0.82);
+
+            border: 1px solid rgba(255, 255, 255, 0.27);
+            border-radius: 19px;
+
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .hero-affiliation {
+            display: flex;
+            align-items: center;
+            gap: 17px;
+
+            margin-bottom: 20px;
+        }
+
+        .hero-logo {
+            width: 84px;
+            height: 105px;
+            flex: 0 0 84px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            background: var(--ui-yellow);
+            border: 2px solid white;
+            border-radius: 12px;
+        }
+
+        .hero-logo img {
+            width: 100%;
+            height: 100%;
+
+            display: block;
+
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .hero-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+
+            margin-bottom: 8px;
+            padding: 7px 12px;
+
+            color: #fff9c4;
+            background: rgba(255, 220, 0, 0.16);
+
+            border: 1px solid rgba(255, 220, 0, 0.55);
+            border-radius: 999px;
+
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .hero-label::before {
+            content: "";
+
+            width: 8px;
+            height: 8px;
+
+            background: var(--ui-yellow);
+            border-radius: 50%;
+
+            box-shadow:
+                    0 0 0 5px rgba(255, 220, 0, 0.18);
+        }
+
+        .hero-affiliation-text {
+            color: #e2e8f0;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .hero-introduction h1 {
+            margin-bottom: 13px;
+
+            font-size: clamp(35px, 5vw, 58px);
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+        }
+
+        .hero-subtitle {
+            margin-bottom: 11px;
+
+            color: var(--ui-yellow);
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .hero-description {
+            max-width: 610px;
+            margin-bottom: 22px;
+
+            color: #e2e8f0;
+            font-size: 15px;
+        }
+
+        .hero-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .button {
+            min-height: 43px;
+            padding: 10px 16px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            color: white;
+            text-decoration: none;
+            font-weight: 800;
+
+            border: 0;
+            border-radius: 9px;
+
+            transition:
+                    transform 0.2s,
+                    background 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+        }
+
+        .button-primary {
+            color: var(--ui-dark);
+            background: var(--ui-yellow);
+        }
+
+        .button-primary:hover {
+            background: #ffe94c;
+        }
+
+        .button-secondary {
+            background: rgba(255, 255, 255, 0.14);
+
+            border:
+                    1px solid rgba(255, 255, 255, 0.38);
+        }
+
+        .button-secondary:hover {
+            background: rgba(255, 255, 255, 0.24);
+        }
+
+        /* =====================================================
+           PANEL PETA
+        ===================================================== */
+
+        .map-panel {
+            position: absolute;
+            top: 55px;
+            right: 28px;
+            z-index: 700;
+
+            width: 335px;
+            max-height: calc(100% - 110px);
+
+            overflow-y: auto;
+
+            background: rgba(255, 255, 255, 0.96);
+
+            border:
+                    1px solid rgba(255, 255, 255, 0.7);
+
+            border-radius: 16px;
+
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(12px);
+        }
+
+        .panel-header {
+            padding: 18px 20px;
+
+            color: white;
+            background:
+                    linear-gradient(
+                            135deg,
+                            var(--primary-dark),
+                            var(--primary)
+                    );
+
+            border-top:
+                    5px solid var(--ui-yellow);
+
+            border-radius: 15px 15px 0 0;
+        }
+
+        .panel-header h2 {
+            margin-bottom: 3px;
+            font-size: 18px;
+        }
+
+        .panel-header p {
+            color: #bae6fd;
+            font-size: 12px;
+        }
+
+        .panel-section {
+            padding: 17px 20px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .panel-section:last-child {
+            border-bottom: 0;
+        }
+
+        .panel-section h3 {
+            margin-bottom: 12px;
+
+            color: var(--primary-dark);
+            font-size: 14px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 6px;
+
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .form-select {
+            width: 100%;
+            min-height: 40px;
+
+            padding: 8px 11px;
+
+            color: var(--text);
+            background: white;
+
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            outline: none;
+        }
+
+        .form-select:focus {
+            border-color: var(--primary-light);
+
+            box-shadow:
+                    0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+
+        .layer-item {
+            padding: 9px 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .layer-name {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .layer-symbol {
+            width: 14px;
+            height: 14px;
+            flex: 0 0 auto;
+
+            border:
+                    2px solid rgba(15, 23, 42, 0.28);
+
+            border-radius: 3px;
+        }
+
+        .symbol-lake {
+            background: #38bdf8;
+        }
+
+        .symbol-campus {
+            background: #38bdf8;
+        }
+
+        .symbol-watershed {
+            background: rgba(34, 197, 94, 0.48);
+        }
+
+        .symbol-sample {
+            background: #f97316;
+            border-radius: 50%;
+        }
+
+        .switch {
+            position: relative;
+
+            width: 42px;
+            height: 23px;
+            flex: 0 0 auto;
+        }
+
+        .switch input {
+            width: 0;
+            height: 0;
+            opacity: 0;
+        }
+
+        .slider {
+            position: absolute;
+            inset: 0;
+
+            background: #cbd5e1;
+            border-radius: 999px;
+
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .slider::before {
+            content: "";
+
+            position: absolute;
+            left: 3px;
+            bottom: 3px;
+
+            width: 17px;
+            height: 17px;
+
+            background: white;
+            border-radius: 50%;
+
+            box-shadow:
+                    0 2px 5px rgba(15, 23, 42, 0.25);
+
+            transition: 0.2s;
+        }
+
+        .switch input:checked + .slider {
+            background: var(--primary-light);
+        }
+
+        .switch input:checked + .slider::before {
+            transform: translateX(19px);
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            margin-bottom: 8px;
+
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 12px;
+
+            border-radius: 3px;
+        }
+
+        .legend-water {
+            background: #38bdf8;
+        }
+
+        .legend-vegetation {
+            background: #22c55e;
+        }
+
+        .legend-built {
+            background: #ef4444;
+        }
+
+        .legend-open {
+            background: #eab308;
+        }
+
+        .map-note {
+            color: var(--text-secondary);
+            font-size: 11px;
+            line-height: 1.55;
+        }
+
+        /* =====================================================
+           STATISTIK PETA
+        ===================================================== */
+
+        .statistics-bar {
+            position: absolute;
+            left: 38px;
+            bottom: 28px;
+            z-index: 600;
+
+            width: min(740px, calc(100% - 430px));
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .map-stat-card {
+            padding: 16px;
+
+            color: white;
+            background: rgba(8, 47, 73, 0.88);
+
+            border:
+                    1px solid rgba(255, 255, 255, 0.26);
+
+            border-top:
+                    3px solid var(--ui-yellow);
+
+            border-radius: 12px;
+
+            backdrop-filter: blur(10px);
+
+            box-shadow:
+                    0 8px 25px rgba(15, 23, 42, 0.25);
+        }
+
+        .map-stat-card span {
+            display: block;
+            margin-bottom: 4px;
+
+            color: #bae6fd;
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .map-stat-card strong {
+            display: block;
+            font-size: 24px;
+        }
+
+        .map-stat-card small {
+            color: #e2e8f0;
+            font-size: 11px;
+        }
+
+        /* =====================================================
+           KONTEN UMUM
+        ===================================================== */
+
+        .content-section {
+            padding: 78px 24px;
+        }
+
+        .content-section:nth-of-type(even) {
+            background: white;
+        }
+
+        .container {
+            width: min(1180px, 100%);
+            margin: 0 auto;
+        }
+
+        .section-heading {
+            max-width: 760px;
+            margin: 0 auto 42px;
+
+            text-align: center;
+        }
+
+        .section-heading span {
+            display: inline-block;
+            margin-bottom: 10px;
+
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 900;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .section-heading h2 {
+            margin-bottom: 14px;
+
+            color: var(--primary-dark);
+            font-size: clamp(29px, 4vw, 43px);
+            line-height: 1.15;
+        }
+
+        .section-heading p {
+            color: var(--text-secondary);
+            font-size: 16px;
+        }
+
+        /* =====================================================
+           PROFIL DAN AFILIASI
+        ===================================================== */
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 35px;
+            align-items: stretch;
+        }
+
+        .about-card,
+        .chart-card {
+            padding: 30px;
+
+            background: white;
+
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+
+            box-shadow:
+                    0 8px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .affiliation {
+            display: grid;
+            grid-template-columns: 155px 1fr;
+            gap: 25px;
+            align-items: center;
+
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .affiliation-image {
+            min-height: 240px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            overflow: hidden;
+
+            background: var(--ui-yellow);
+
+            border: 1px solid #e8c900;
+            border-radius: 13px;
+
+            box-shadow:
+                    0 7px 20px rgba(15, 23, 42, 0.13);
+        }
+
+        .affiliation-image img {
+            width: 100%;
+            height: 240px;
+
+            display: block;
+
+            object-fit: contain;
+            object-position: center;
+        }
+
+        .affiliation h3 {
+            margin-bottom: 8px;
+
+            color: var(--primary-dark);
+            font-size: 25px;
+            line-height: 1.25;
+        }
+
+        .affiliation-title {
+            margin-bottom: 8px;
+
+            color: var(--primary);
+            font-weight: 800;
+        }
+
+        .affiliation-faculty {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .about-card > p {
+            margin-bottom: 15px;
+            color: var(--text-secondary);
+        }
+
+        .chart-card h3 {
+            margin-bottom: 16px;
+
+            color: var(--primary-dark);
+            font-size: 23px;
+        }
+
+        .skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px;
+
+            margin-top: 22px;
+        }
+
+        .skill {
+            padding: 7px 11px;
+
+            color: var(--primary);
+            background: #e0f2fe;
+
+            border: 1px solid #bae6fd;
+            border-radius: 999px;
+
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            min-height: 320px;
+        }
+
+        /* =====================================================
+           PENELITIAN
+        ===================================================== */
+
+        .research-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .research-card {
+            position: relative;
+            overflow: hidden;
+
+            padding: 28px;
+
+            background: white;
+
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+
+            box-shadow:
+                    0 8px 28px rgba(15, 23, 42, 0.08);
+
+            transition:
+                    transform 0.2s,
+                    box-shadow 0.2s;
+        }
+
+        .research-card::before {
+            content: "";
+
+            position: absolute;
+            top: 0;
+            left: 0;
+
+            width: 100%;
+            height: 5px;
+
+            background:
+                    linear-gradient(
+                            90deg,
+                            var(--ui-yellow),
+                            var(--primary),
+                            var(--secondary)
+                    );
+        }
+
+        .research-card:hover {
+            transform: translateY(-6px);
+
+            box-shadow:
+                    0 18px 38px rgba(15, 23, 42, 0.14);
+        }
+
+        .research-icon {
+            width: 52px;
+            height: 52px;
+
+            display: grid;
+            place-items: center;
+
+            margin-bottom: 18px;
+
+            color: white;
+            background:
+                    linear-gradient(
+                            135deg,
+                            var(--primary),
+                            var(--primary-light)
+                    );
+
+            border-radius: 13px;
+            font-size: 24px;
+        }
+
+        .research-card h3 {
+            margin-bottom: 10px;
+
+            color: var(--primary-dark);
+            font-size: 20px;
+        }
+
+        .research-card p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* =====================================================
+           BLOG
+        ===================================================== */
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .article-card {
+            overflow: hidden;
+
+            background: white;
+
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+
+            box-shadow:
+                    0 8px 28px rgba(15, 23, 42, 0.08);
+
+            transition:
+                    transform 0.2s,
+                    box-shadow 0.2s;
+        }
+
+        .article-card:hover {
+            transform: translateY(-6px);
+
+            box-shadow:
+                    0 18px 38px rgba(15, 23, 42, 0.14);
+        }
+
+        .article-image {
+            height: 185px;
+
+            display: grid;
+            place-items: center;
+
+            color: white;
+
+            background:
+                    radial-gradient(
+                            circle at top right,
+                            rgba(255, 220, 0, 0.85),
+                            transparent 34%
+                    ),
+                    linear-gradient(
+                            135deg,
+                            #075985,
+                            #0ea5e9
+                    );
+
+            font-size: 58px;
+        }
+
+        .article-content {
+            padding: 24px;
+        }
+
+        .article-label {
+            display: inline-block;
+
+            margin-bottom: 11px;
+            padding: 5px 9px;
+
+            color: var(--primary-dark);
+            background: #fff7b2;
+
+            border: 1px solid #f4d90a;
+            border-radius: 999px;
+
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .article-content h3 {
+            margin-bottom: 10px;
+
+            color: var(--primary-dark);
+            font-size: 20px;
+            line-height: 1.35;
+        }
+
+        .article-content p {
+            margin-bottom: 17px;
+
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .article-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 900;
+        }
+
+        .article-link:hover {
+            text-decoration: underline;
+        }
+
+        /* =====================================================
+           KONTAK
+        ===================================================== */
+
+        .contact-box {
+            padding: 42px;
+
+            color: white;
+
+            background:
+                    linear-gradient(
+                            135deg,
+                            var(--primary-dark),
+                            var(--primary)
+                    );
+
+            border-top:
+                    6px solid var(--ui-yellow);
+
+            border-radius: 20px;
+
+            box-shadow: var(--shadow);
+        }
+
+        .contact-box h2 {
+            margin-bottom: 12px;
+            font-size: 32px;
+        }
+
+        .contact-box > p {
+            max-width: 680px;
+            margin-bottom: 25px;
+
+            color: #dbeafe;
+        }
+
+        .contact-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .contact-link {
+            padding: 11px 15px;
+
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+
+            color: white;
+            background: rgba(255, 255, 255, 0.12);
+
+            border:
+                    1px solid rgba(255, 255, 255, 0.3);
+
+            border-radius: 9px;
+
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .contact-link:hover {
+            color: var(--ui-dark);
+            background: var(--ui-yellow);
+        }
+
+        /* =====================================================
+           FOOTER
+        ===================================================== */
+
+        footer {
+            padding: 32px 20px;
+
+            color: #cbd5e1;
+            background: #020617;
+
+            border-top:
+                    5px solid var(--ui-yellow);
+
+            text-align: center;
+        }
+
+        footer p {
+            margin-bottom: 8px;
+            color: white;
+            font-weight: 700;
+        }
+
+        footer small {
+            display: block;
+
+            max-width: 840px;
+            margin: 0 auto;
+
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        /* =====================================================
+           POPUP LEAFLET
+        ===================================================== */
+
+        .popup-content {
+            min-width: 210px;
+        }
+
+        .popup-content h3 {
+            margin-bottom: 7px;
+
+            color: var(--primary-dark);
+            font-size: 16px;
+        }
+
+        .popup-content p {
+            margin-bottom: 5px;
+
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+
+        .popup-badge {
+            display: inline-block;
+
+            margin-top: 6px;
+            padding: 4px 8px;
+
+            color: white;
+            background: var(--primary);
+
+            border-radius: 999px;
+
+            font-size: 10px;
+            font-weight: 800;
+        }
+
+        /* =====================================================
+           RESPONSIVE
+        ===================================================== */
+
+        @media (max-width: 1100px) {
+            .hero-map {
+                min-height: 900px;
+            }
+
+            .hero-introduction {
+                top: 35px;
+                left: 24px;
+
+                width: calc(100% - 420px);
+            }
+
+            .map-panel {
+                top: 35px;
+                right: 20px;
+            }
+
+            .statistics-bar {
+                left: 24px;
+                bottom: 25px;
+
+                width: calc(100% - 400px);
+            }
+
+            .research-grid,
+            .blog-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 850px) {
+            .navbar {
+                padding: 9px 15px;
+            }
+
+            .menu-button {
+                display: block;
+            }
+
+            .nav-links {
+                position: absolute;
+                top: 76px;
+                left: 0;
+                right: 0;
+
+                display: none;
+                flex-direction: column;
+                align-items: stretch;
+
+                padding: 12px;
+
+                background: rgba(8, 47, 73, 0.99);
+
+                box-shadow:
+                        0 12px 20px rgba(15, 23, 42, 0.25);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links a {
+                text-align: center;
+            }
+
+            .hero-map {
+                height: auto;
+                min-height: 1320px;
+            }
+
+            #map {
+                height: 1320px;
+            }
+
+            .map-overlay {
+                background:
+                        linear-gradient(
+                                180deg,
+                                rgba(3, 30, 47, 0.78) 0%,
+                                rgba(3, 30, 47, 0.32) 50%,
+                                transparent 100%
+                        );
+            }
+
+            .hero-introduction {
+                top: 25px;
+                left: 18px;
+                right: 18px;
+
+                width: auto;
+                padding: 24px;
+            }
+
+            .map-panel {
+                top: 540px;
+                left: 18px;
+                right: 18px;
+
+                width: auto;
+                max-height: 520px;
+            }
+
+            .statistics-bar {
+                left: 18px;
+                right: 18px;
+                bottom: 24px;
+
+                width: auto;
+
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .research-grid,
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .brand-logo {
+                width: 36px;
+                height: 48px;
+                flex-basis: 36px;
+            }
+
+            .brand-text strong {
+                font-size: 14px;
+            }
+
+            .brand-text span {
+                display: none;
+            }
+
+            .hero-map {
+                min-height: 1500px;
+            }
+
+            #map {
+                height: 1500px;
+            }
+
+            .hero-affiliation {
+                align-items: flex-start;
+            }
+
+            .hero-logo {
+                width: 68px;
+                height: 88px;
+                flex-basis: 68px;
+            }
+
+            .hero-introduction h1 {
+                font-size: 35px;
+            }
+
+            .hero-subtitle {
+                font-size: 16px;
+            }
+
+            .hero-introduction {
+                padding: 20px;
+            }
+
+            .map-panel {
+                top: 600px;
+            }
+
+            .statistics-bar {
+                grid-template-columns: 1fr;
+            }
+
+            .content-section {
+                padding: 58px 16px;
+            }
+
+            .about-card,
+            .chart-card {
+                padding: 22px;
+            }
+
+            .affiliation {
+                grid-template-columns: 1fr;
+
+                text-align: center;
+            }
+
+            .affiliation-image {
+                width: 165px;
+                min-height: 245px;
+                margin: 0 auto;
+            }
+
+            .affiliation-image img {
+                height: 245px;
+            }
+
+            .contact-box {
+                padding: 28px 22px;
+            }
+        }
+
+        /* =====================================================
+           PENYEMPURNAAN BLOG AKADEMIK
+        ===================================================== */
+
+        :root {
+            --paper: #f7f8f6;
+            --ink: #17212b;
+            --muted-ink: #5b6873;
+            --accent: #b8892d;
+            --accent-soft: #f5ead0;
+        }
+
+        body {
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 8% 10%, rgba(184, 137, 45, 0.08), transparent 25rem),
+                var(--paper);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        .brand-text strong {
+            font-family: Georgia, "Times New Roman", serif;
+            letter-spacing: -0.02em;
+        }
+
+        .navbar {
+            min-height: 72px;
+            padding-inline: clamp(16px, 4vw, 52px);
+            background: rgba(15, 47, 65, 0.96);
+            border-bottom: 1px solid rgba(255, 220, 0, 0.8);
+        }
+
+        .brand-logo,
+        .hero-logo,
+        .affiliation-image {
+            background:
+                linear-gradient(135deg, rgba(255, 220, 0, 0.96), rgba(255, 244, 170, 0.92));
+        }
+
+        .nav-links a,
+        .button,
+        .contact-link,
+        .article-link {
+            transition:
+                color 0.2s ease,
+                background-color 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .nav-links a:focus-visible,
+        .menu-button:focus-visible,
+        .button:focus-visible,
+        .contact-link:focus-visible,
+        .article-link:focus-visible,
+        .form-select:focus-visible,
+        .switch input:focus-visible + .slider {
+            outline: 3px solid var(--ui-yellow);
+            outline-offset: 3px;
+        }
+
+        .hero-map {
+            height: min(780px, calc(100vh - 72px));
+            min-height: 680px;
+            margin-top: 72px;
+        }
+
+        .hero-introduction {
+            top: clamp(32px, 6vw, 72px);
+            left: clamp(18px, 5vw, 72px);
+            width: min(560px, calc(100% - 470px));
+            padding: clamp(24px, 3vw, 38px);
+            background: rgba(11, 42, 59, 0.88);
+            border-color: rgba(255, 255, 255, 0.36);
+        }
+
+        .hero-introduction h1 {
+            max-width: 520px;
+        }
+
+        .hero-description {
+            max-width: 500px;
+            color: #e7eef2;
+        }
+
+        .map-panel {
+            top: clamp(32px, 6vw, 72px);
+            right: clamp(18px, 4vw, 56px);
+            width: min(335px, calc(100% - 40px));
+        }
+
+        .content-section {
+            padding-block: clamp(64px, 8vw, 104px);
+        }
+
+        .content-section:nth-of-type(even) {
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .section-heading {
+            margin-bottom: clamp(30px, 4vw, 48px);
+        }
+
+        .section-heading span {
+            color: var(--accent);
+        }
+
+        .section-heading h2 {
+            color: #183b52;
+        }
+
+        .about-card,
+        .chart-card,
+        .research-card,
+        .article-card {
+            border-color: #e3e7e8;
+            box-shadow: 0 12px 30px rgba(20, 43, 55, 0.07);
+        }
+
+        .about-card,
+        .chart-card {
+            border-radius: 12px;
+        }
+
+        .research-card,
+        .article-card {
+            border-radius: 10px;
+        }
+
+        .research-card:hover,
+        .article-card:hover {
+            box-shadow: 0 18px 38px rgba(20, 43, 55, 0.13);
+        }
+
+        .skill,
+        .article-label {
+            color: #75571e;
+            background: var(--accent-soft);
+            border-color: #e5c980;
+        }
+
+        .blog-grid {
+            align-items: stretch;
+        }
+
+        .article-card {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .article-content {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .article-content p {
+            color: var(--muted-ink);
+        }
+
+        .article-link {
+            margin-top: auto;
+        }
+
+        .contact-box {
+            background:
+                linear-gradient(135deg, rgba(17, 61, 82, 0.98), rgba(8, 47, 73, 0.98)),
+                var(--primary-dark);
+        }
+
+        @media (max-width: 1100px) {
+            .hero-map {
+                height: auto;
+                min-height: 900px;
+            }
+
+            .hero-introduction {
+                width: calc(100% - 420px);
+            }
+        }
+
+        @media (max-width: 850px) {
+            .hero-map {
+                min-height: 1320px;
+            }
+
+            #map {
+                height: 1320px;
+            }
+
+            .hero-introduction {
+                width: auto;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero-map {
+                min-height: 1500px;
+            }
+
+            #map {
+                height: 1500px;
+            }
+
+            .hero-introduction {
+                left: 16px;
+                right: 16px;
+                padding: 22px 18px;
+            }
+
+            .hero-introduction h1 {
+                font-size: clamp(32px, 10vw, 42px);
+            }
+
+            .hero-description {
+                font-size: 14px;
+            }
+
+            .hero-buttons .button {
+                width: 100%;
+            }
+
+            .map-panel {
+                top: 600px;
+                left: 16px;
+                right: 16px;
+                width: auto;
+            }
+
+            .content-section {
+                padding-inline: 16px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                transition-duration: 0.01ms !important;
+                animation-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- =========================================================
+     NAVIGASI
+========================================================= -->
+
+<nav class="navbar">
+
+    <a href="#beranda" class="brand">
+
+        <div class="brand-logo">
+            <img
+                    src="images/logo-fmipa-ui.png"
+                    alt="Logo Universitas Indonesia dan FMIPA UI"
+                    onerror="this.hidden = true; this.parentElement.classList.add('logo-missing')"
+            >
+        </div>
+
+        <div class="brand-text">
+            <strong>Pramono Pido</strong>
+
+            <span>
+                Geografi Universitas Indonesia
+            </span>
+        </div>
+
+    </a>
+
+    <button
+            class="menu-button"
+            id="menuButton"
+            type="button"
+            aria-label="Buka menu navigasi"
+    >
+        ☰
+    </button>
+
+    <div class="nav-links" id="navLinks">
+        <a href="#beranda">Peta</a>
+        <a href="#tentang">Tentang</a>
+        <a href="#penelitian">Penelitian</a>
+        <a href="#blog">Blog</a>
+        <a href="#kontak">Kontak</a>
+    </div>
+
+</nav>
+
+<!-- =========================================================
+     HERO MAP
+========================================================= -->
+
+<section class="hero-map" id="beranda">
+
+    <div id="map"></div>
+
+    <div class="map-overlay"></div>
+
+    <div class="hero-introduction">
+
+        <div class="hero-affiliation">
+
+            <div class="hero-logo">
+                <img
+                        src="images/logo-fmipa-ui.png"
+                        alt="Logo Universitas Indonesia dan FMIPA UI"
+                        onerror="this.hidden = true; this.parentElement.classList.add('logo-missing')"
+                >
+            </div>
+
+            <div>
+                <div class="hero-affiliation-text">
+                    Fakultas Matematika dan Ilmu Pengetahuan Alam<br>
+                    Universitas Indonesia
+                </div>
+            </div>
+
+        </div>
+
+        <h1>
+            Pramono Pido
+        </h1>
+
+        <p class="hero-subtitle">
+            Geografi Universitas Indonesia
+        </p>
+
+        <div class="hero-buttons">
+
+            <a
+                    href="#penelitian"
+                    class="button button-primary"
+            >
+                Lihat penelitian
+            </a>
+
+            <button
+                    class="button button-secondary"
+                    id="focusCampusButton"
+                    type="button"
+            >
+                Universitas Indonesia Depok
+            </button>
+
+        </div>
+
+    </div>
+
+    <!-- Panel kontrol peta -->
+
+    <aside class="map-panel">
+
+        <div class="panel-header">
+            <h2>Kontrol Peta</h2>
+            <p>Pilih data dan tampilan peta</p>
+        </div>
+
+        <div class="panel-section">
+
+            <label
+                    class="control-label"
+                    for="basemapSelect"
+            >
+                Peta dasar
+            </label>
+
+            <select
+                    class="form-select"
+                    id="basemapSelect"
+            >
+                <option value="osm">
+                    OpenStreetMap
+                </option>
+
+                <option value="esriStreet">
+                    Esri World Street Map
+                </option>
+
+                <option value="esriSatellite">
+                    Esri World Imagery
+                </option>
+            </select>
+
+        </div>
+
+    </aside>
+
+</section>
+
+<!-- =========================================================
+     TENTANG
+========================================================= -->
+
+<section class="content-section" id="tentang">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <span>Profil akademik</span>
+
+            <h2>
+                Tentang Saya
+            </h2>
+
+            <p>
+                Geografi, teknologi geospasial, penelitian lingkungan,
+                dan komunikasi ilmiah dalam satu portal digital.
+            </p>
+
+        </div>
+
+        <div class="about-grid">
+
+            <div class="about-card">
+
+                <div class="affiliation">
+
+                    <div class="affiliation-image">
+
+                        <img
+                                src="images/logo-fmipa-ui.png"
+                                alt="Universitas Indonesia dan Fakultas Matematika dan Ilmu Pengetahuan Alam"
+                                onerror="this.hidden = true; this.parentElement.classList.add('logo-missing')"
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <h3>
+                            Pramono Pido
+                        </h3>
+
+                        <p class="affiliation-title">
+                            Geografi
+                            Universitas Indonesia
+                        </p>
+
+                        <p class="affiliation-faculty">
+                            Fakultas Matematika dan Ilmu Pengetahuan Alam,
+                            Universitas Indonesia.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <p>
+                    Saya memiliki minat akademik pada Sistem Informasi
+                    Geografis, penginderaan jauh, geografi lingkungan,
+                    serta pengelolaan daerah aliran sungai.
+                </p>
+
+                <p>
+                    Fokus pengembangan saat ini adalah pemanfaatan QGIS,
+                    ArcGIS Pro, Google Earth Engine, Python, dan teknologi
+                    web untuk menganalisis serta menyampaikan informasi
+                    geospasial.
+                </p>
+
+                <p>
+                    Website ini digunakan untuk membagikan hasil penelitian,
+                    tutorial GIS, peta interaktif, visualisasi data,
+                    catatan metodologi, dan dokumentasi kegiatan akademik.
+                </p>
+
+                <div class="skills">
+                    <span class="skill">QGIS</span>
+                    <span class="skill">ArcGIS Pro</span>
+                    <span class="skill">Google Earth Engine</span>
+                    <span class="skill">Python</span>
+                    <span class="skill">GeoPandas</span>
+                    <span class="skill">Penginderaan Jauh</span>
+                    <span class="skill">Web GIS</span>
+                </div>
+
+            </div>
+
+            <div class="chart-card">
+
+                <h3>
+                    Contoh perubahan tutupan lahan
+                </h3>
+
+                <div class="chart-wrapper">
+                    <canvas id="landCoverChart"></canvas>
+                </div>
+
+                <p class="map-note">
+                    Grafik masih menggunakan angka demonstrasi.
+                    Ganti data JavaScript dengan hasil analisis
+                    penelitian Anda.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================================
+     PENELITIAN
+========================================================= -->
+
+<section class="content-section" id="penelitian">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <span>Fokus penelitian</span>
+
+            <h2>
+                Penelitian dan Analisis Geospasial
+            </h2>
+
+            <p>
+                Bidang penelitian dan teknologi yang digunakan
+                untuk memahami perubahan wilayah dan lingkungan.
+            </p>
+
+        </div>
+
+        <div class="research-grid">
+
+            <article class="research-card">
+
+                <div class="research-icon">
+                    🛰
+                </div>
+
+                <h3>
+                    Penginderaan Jauh
+                </h3>
+
+                <p>
+                    Pemanfaatan citra Landsat, Sentinel-2,
+                    serta dataset penginderaan jauh untuk
+                    memantau perubahan lingkungan.
+                </p>
+
+            </article>
+
+            <article class="research-card">
+
+                <div class="research-icon">
+                    🗺
+                </div>
+
+                <h3>
+                    Sistem Informasi Geografis
+                </h3>
+
+                <p>
+                    Analisis overlay, buffer, jaringan,
+                    tutupan lahan, kesesuaian wilayah,
+                    dan visualisasi data spasial.
+                </p>
+
+            </article>
+
+            <article class="research-card">
+
+                <div class="research-icon">
+                    🌊
+                </div>
+
+                <h3>
+                    Danau Limboto
+                </h3>
+
+                <p>
+                    Kajian perubahan perairan, sedimentasi,
+                    penggunaan lahan, daerah aliran sungai,
+                    dan tekanan lingkungan.
+                </p>
+
+            </article>
+
+            <article class="research-card">
+
+                <div class="research-icon">
+                    🌱
+                </div>
+
+                <h3>
+                    Geografi Lingkungan
+                </h3>
+
+                <p>
+                    Analisis hubungan aktivitas manusia,
+                    perubahan lahan, kondisi ekosistem,
+                    dan pengelolaan sumber daya.
+                </p>
+
+            </article>
+
+            <article class="research-card">
+
+                <div class="research-icon">
+                    ☁
+                </div>
+
+                <h3>
+                    Google Earth Engine
+                </h3>
+
+                <p>
+                    Pemrosesan citra satelit berbasis cloud
+                    untuk klasifikasi, indeks vegetasi,
+                    indeks air, dan analisis temporal.
+                </p>
+
+            </article>
+
+            <article class="research-card">
+
+                <div class="research-icon">
+                    📊
+                </div>
+
+                <h3>
+                    Analisis Data
+                </h3>
+
+                <p>
+                    Penggunaan Python, Deepnote, pandas,
+                    GeoPandas, grafik, statistik, dan
+                    dashboard penelitian interaktif.
+                </p>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================================
+     BLOG
+========================================================= -->
+
+<section class="content-section" id="blog">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <span>Catatan dan publikasi</span>
+
+            <h2>
+                Tulisan Terbaru
+            </h2>
+
+            <p>
+                Artikel mengenai GIS, penginderaan jauh,
+                metode penelitian, pemetaan, dan analisis lingkungan.
+            </p>
+
+        </div>
+
+        <div class="blog-grid">
+
+            <article class="article-card">
+
+                <div class="article-image">
+                    🌍
+                </div>
+
+                <div class="article-content">
+
+                    <span class="article-label">
+                        Tutupan lahan
+                    </span>
+
+                    <h3>
+                        Analisis Tutupan Lahan DAS Limboto
+                    </h3>
+
+                    <p>
+                        Penggunaan citra Landsat dan Sentinel-2
+                        untuk mengidentifikasi perubahan tutupan
+                        lahan di DAS Limboto.
+                    </p>
+
+                    <a
+                            class="article-link"
+                            href="artikel-tutupan-lahan.html"
+                    >
+                        Baca artikel →
+                    </a>
+
+                </div>
+
+            </article>
+
+            <article class="article-card">
+
+                <div class="article-image">
+                    🧭
+                </div>
+
+                <div class="article-content">
+
+                    <span class="article-label">
+                        Tutorial
+                    </span>
+
+                    <h3>
+                        Belajar GIS dari Nol
+                    </h3>
+
+                    <p>
+                        Pengantar data spasial, sistem koordinat,
+                        analisis vektor, raster, dan kartografi.
+                    </p>
+
+                    <a
+                            class="article-link"
+                            href="artikel-belajar-gis.html"
+                    >
+                        Baca artikel →
+                    </a>
+
+                </div>
+
+            </article>
+
+            <article class="article-card">
+
+                <div class="article-image">
+                    🛰
+                </div>
+
+                <div class="article-content">
+
+                    <span class="article-label">
+                        Earth Engine
+                    </span>
+
+                    <h3>
+                        Tutorial Google Earth Engine
+                    </h3>
+
+                    <p>
+                        Cara memulai analisis citra satelit
+                        berbasis cloud menggunakan
+                        Google Earth Engine.
+                    </p>
+
+                    <a
+                            class="article-link"
+                            href="artikel-google-earth-engine.html"
+                    >
+                        Baca artikel →
+                    </a>
+
+                </div>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================================
+     KONTAK
+========================================================= -->
+
+<section class="content-section" id="kontak">
+
+    <div class="container">
+
+        <div class="contact-box">
+
+            <h2>
+                Diskusi dan Kolaborasi
+            </h2>
+
+            <p>
+                Saya terbuka untuk diskusi akademik, kolaborasi
+                penelitian, pengembangan peta web, analisis data
+                geospasial, dan pertukaran pengetahuan di bidang
+                geografi.
+            </p>
+
+            <div class="contact-links">
+
+                <a
+                        class="contact-link"
+                        href="mailto:pramono.putra@ui.ac.id"
+                >
+                    ✉ pramono.putra@ui.ac.id
+                </a>
+
+                <a
+                        class="contact-link"
+                        href="https://github.com/Visitor10fib"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                >
+                    ◉ GitHub
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer>
+
+    <p>
+        © 2026 Pramono Pido
+    </p>
+
+</footer>
+
+<script>
+    "use strict";
+
+    /* =========================================================
+       MENU PONSEL
+    ========================================================= */
+
+    const menuButton =
+        document.getElementById("menuButton");
+
+    const navLinks =
+        document.getElementById("navLinks");
+
+    menuButton.addEventListener(
+        "click",
+        function () {
+            navLinks.classList.toggle("active");
+        }
+    );
+
+    document
+        .querySelectorAll(".nav-links a")
+        .forEach(
+            function (link) {
+                link.addEventListener(
+                    "click",
+                    function () {
+                        navLinks.classList.remove("active");
+                    }
+                );
+            }
+        );
+
+    /* =========================================================
+       MEMBUAT PETA
+    ========================================================= */
+
+    const campusCenter = [
+        -6.3601,
+        106.8272
+    ];
+
+    const map = L.map(
+        "map",
+        {
+            center: campusCenter,
+            zoom: 14,
+            zoomControl: false
+        }
+    );
+
+    L.control
+        .zoom({
+            position: "bottomright"
+        })
+        .addTo(map);
+
+    L.control
+        .scale({
+            position: "bottomright",
+            imperial: false
+        })
+        .addTo(map);
+
+    /* =========================================================
+       BASEMAP
+    ========================================================= */
+
+    const basemaps = {
+
+        osm: L.tileLayer(
+            "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                maxZoom: 19,
+
+                attribution:
+                    "&copy; OpenStreetMap contributors"
+            }
+        ),
+
+        esriStreet: L.tileLayer(
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+            {
+                maxZoom: 19,
+                attribution: "Tiles &copy; Esri"
+            }
+        ),
+
+        esriSatellite: L.tileLayer(
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            {
+                maxZoom: 19,
+                attribution: "Tiles &copy; Esri"
+            }
+        )
+
+    };
+
+    let activeBasemap =
+        basemaps.osm;
+
+    activeBasemap.addTo(map);
+
+    const basemapSelect =
+        document.getElementById("basemapSelect");
+
+    basemapSelect.addEventListener(
+        "change",
+        function () {
+
+            map.removeLayer(activeBasemap);
+
+            activeBasemap =
+                basemaps[basemapSelect.value];
+
+            activeBasemap.addTo(map);
+            activeBasemap.bringToBack();
+
+        }
+    );
+
+    /* =========================================================
+       DATA DEMONSTRASI
+
+       Ganti bagian ini dengan GeoJSON hasil penelitian Anda.
+    ========================================================= */
+
+    const watershedGeoJSON = {
+
+        type: "Feature",
+
+        properties: {
+            nama: "Area Studi Demonstrasi",
+
+            keterangan:
+                "Poligon ilustratif untuk pengujian tampilan web."
+        },
+
+        geometry: {
+
+            type: "Polygon",
+
+            coordinates: [[
+                [122.925, 0.665],
+                [123.020, 0.690],
+                [123.102, 0.640],
+                [123.115, 0.545],
+                [123.055, 0.475],
+                [122.948, 0.485],
+                [122.895, 0.555],
+                [122.925, 0.665]
+            ]]
+
+        }
+
+    };
+
+    const campusGeoJSON = {
+
+        type: "Feature",
+
+        properties: {
+            nama: "Kampus Universitas Indonesia Depok",
+
+            status:
+                "Lokasi peta ilustratif",
+
+            keterangan:
+                "Garis biru menandai area ilustratif kampus UI Depok."
+        },
+
+        geometry: {
+
+            type: "Polygon",
+
+            coordinates: [[
+                [106.8185, -6.3525],
+                [106.8325, -6.3525],
+                [106.8370, -6.3625],
+                [106.8330, -6.3745],
+                [106.8190, -6.3735],
+                [106.8145, -6.3630],
+                [106.8185, -6.3525]
+            ]]
+
+        }
+
+    };
+
+    /* =========================================================
+       LAYER AREA STUDI
+    ========================================================= */
+
+    const watershedLayer = L.geoJSON(
+        watershedGeoJSON,
+        {
+
+            style: {
+                color: "#16a34a",
+                weight: 3,
+                opacity: 0.9,
+                fillColor: "#22c55e",
+                fillOpacity: 0.16,
+                dashArray: "8 6"
+            },
+
+            onEachFeature:
+                function (feature, layer) {
+
+                    layer.bindPopup(`
+                        <div class="popup-content">
+
+                            <h3>
+                                ${feature.properties.nama}
+                            </h3>
+
+                            <p>
+                                ${feature.properties.keterangan}
+                            </p>
+
+                            <span class="popup-badge">
+                                Data demonstrasi
+                            </span>
+
+                        </div>
+                    `);
+
+                }
+
+        }
+    );
+
+    /* =========================================================
+       LAYER KAMPUS UI DEPOK
+    ========================================================= */
+
+    const campusLayer = L.geoJSON(
+        campusGeoJSON,
+        {
+
+            style: {
+                color: "#0369a1",
+                weight: 3,
+                opacity: 1,
+                fillColor: "#38bdf8",
+                fillOpacity: 0.62
+            },
+
+            onEachFeature:
+                function (feature, layer) {
+
+                    layer.bindPopup(`
+                        <div class="popup-content">
+
+                            <h3>
+                                ${feature.properties.nama}
+                            </h3>
+
+                            <p>
+                                <strong>Status:</strong>
+                                ${feature.properties.status}
+                            </p>
+
+                            <p>
+                                ${feature.properties.keterangan}
+                            </p>
+
+                            <span class="popup-badge">
+                                Kampus UI Depok
+                            </span>
+
+                        </div>
+                    `);
+
+                }
+
+        }
+    ).addTo(map);
+
+    /* =========================================================
+       TITIK CONTOH
+    ========================================================= */
+
+    const sampleLocations = [
+
+        {
+            nama: "Titik Contoh 1",
+            kategori: "Pengamatan perairan",
+            latitude: 0.586,
+            longitude: 122.988,
+
+            keterangan:
+                "Lokasi demonstrasi untuk popup data penelitian."
+        },
+
+        {
+            nama: "Titik Contoh 2",
+            kategori: "Pengamatan vegetasi",
+            latitude: 0.610,
+            longitude: 123.027,
+
+            keterangan:
+                "Lokasi demonstrasi untuk pengujian marker."
+        },
+
+        {
+            nama: "Titik Contoh 3",
+            kategori: "Pengamatan lahan",
+            latitude: 0.555,
+            longitude: 123.019,
+
+            keterangan:
+                "Lokasi demonstrasi untuk pengujian layer."
+        },
+
+        {
+            nama: "Titik Contoh 4",
+            kategori: "Pengamatan lingkungan",
+            latitude: 0.528,
+            longitude: 122.966,
+
+            keterangan:
+                "Koordinat bukan data penelitian sebenarnya."
+        },
+
+        {
+            nama: "Titik Contoh 5",
+            kategori: "Pengamatan sosial",
+            latitude: 0.624,
+            longitude: 122.952,
+
+            keterangan:
+                "Ganti dengan data survei atau lokasi sampel."
+        }
+
+    ];
+
+    const sampleLayer =
+        L.layerGroup();
+
+    sampleLocations.forEach(
+        function (location, index) {
+
+            const marker = L.circleMarker(
+                [
+                    location.latitude,
+                    location.longitude
+                ],
+                {
+                    radius: 8,
+                    color: "#ffffff",
+                    weight: 2,
+
+                    fillColor:
+                        index % 2 === 0
+                            ? "#f97316"
+                            : "#ef4444",
+
+                    fillOpacity: 0.95
+                }
+            );
+
+            marker.bindTooltip(
+                location.nama,
+                {
+                    direction: "top",
+                    offset: [0, -8]
+                }
+            );
+
+            marker.bindPopup(`
+                <div class="popup-content">
+
+                    <h3>
+                        ${location.nama}
+                    </h3>
+
+                    <p>
+                        <strong>Kategori:</strong>
+                        ${location.kategori}
+                    </p>
+
+                    <p>
+                        <strong>Latitude:</strong>
+                        ${location.latitude}
+                    </p>
+
+                    <p>
+                        <strong>Longitude:</strong>
+                        ${location.longitude}
+                    </p>
+
+                    <p>
+                        ${location.keterangan}
+                    </p>
+
+                    <span class="popup-badge">
+                        Titik contoh
+                    </span>
+
+                </div>
+            `);
+
+            marker.addTo(sampleLayer);
+
+        }
+    );
+
+    /* =========================================================
+       TOMBOL LOKASI KAMPUS
+    ========================================================= */
+
+    document
+        .getElementById("focusCampusButton")
+        .addEventListener(
+            "click",
+            function () {
+
+                map.setView(campusCenter, 15, {
+                    animate: true
+                });
+
+            }
+        );
+
+    /* =========================================================
+       DATA GRAFIK DEMONSTRASI
+    ========================================================= */
+
+    const yearlyData = {
+
+        2015: {
+            water: 32,
+            vegetation: 47,
+            built: 12,
+            open: 9
+        },
+
+        2020: {
+            water: 28,
+            vegetation: 43,
+            built: 18,
+            open: 11
+        },
+
+        2025: {
+            water: 24,
+            vegetation: 39,
+            built: 25,
+            open: 12
+        }
+
+    };
+
+    const chartContext =
+        document
+            .getElementById("landCoverChart")
+            .getContext("2d");
+
+    const landCoverChart =
+        new Chart(
+            chartContext,
+            {
+
+                type: "doughnut",
+
+                data: {
+
+                    labels: [
+                        "Perairan",
+                        "Vegetasi",
+                        "Lahan terbangun",
+                        "Lahan terbuka"
+                    ],
+
+                    datasets: [
+                        {
+
+                            data: [
+                                yearlyData[2025].water,
+                                yearlyData[2025].vegetation,
+                                yearlyData[2025].built,
+                                yearlyData[2025].open
+                            ],
+
+                            backgroundColor: [
+                                "#38bdf8",
+                                "#22c55e",
+                                "#ef4444",
+                                "#eab308"
+                            ],
+
+                            borderColor: "#ffffff",
+                            borderWidth: 4,
+                            hoverOffset: 10
+
+                        }
+                    ]
+
+                },
+
+                options: {
+
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    plugins: {
+
+                        legend: {
+
+                            position: "bottom",
+
+                            labels: {
+                                padding: 16,
+                                usePointStyle: true
+                            }
+
+                        },
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label:
+                                    function (context) {
+
+                                        return (
+                                            context.label +
+                                            ": " +
+                                            context.raw +
+                                            "%"
+                                        );
+
+                                    }
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        );
+
+    window.addEventListener(
+        "load",
+        function () {
+
+            setTimeout(
+                function () {
+                    map.invalidateSize();
+                },
+                300
+            );
+
+        }
+    );
+</script>
+
+</body>
+</html>
