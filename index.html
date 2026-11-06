@@ -1809,16 +1809,19 @@
                     class="form-select"
                     id="basemapSelect"
             >
-                <option value="osm">
-                    OpenStreetMap
+                <option
+                        value="esriSatellite"
+                        selected
+                >
+                    Esri World Imagery
                 </option>
 
                 <option value="esriStreet">
                     Esri World Street Map
                 </option>
 
-                <option value="esriSatellite">
-                    Esri World Imagery
+                <option value="osm">
+                    OpenStreetMap
                 </option>
             </select>
 
@@ -2368,7 +2371,7 @@
     };
 
     let activeBasemap =
-        basemaps.osm;
+        basemaps.esriSatellite;
 
     activeBasemap.addTo(map);
 
